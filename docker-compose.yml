@@ -1,0 +1,88 @@
+services:
+  api-1:
+    image: notification-api
+    container_name: notification-api-1
+    environment:
+      PORT: 3000
+      SERVER_ID: api-1
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://rabbitmq:5672
+    networks:
+      - notification-network
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: npm run dev # Overrides the default CMD to use your watch script
+    volumes:
+      - .:/app # Mounts your local project folder to the container's app folder
+      - /app/node_modules # Anonymous volume to protect the container's node_modules
+    depends_on:
+      - redis
+
+  api-2:
+    image: notification-api
+    container_name: notification-api-2
+    environment:
+      PORT: 3000
+      SERVER_ID: api-2
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://rabbitmq:5672
+    networks:
+      - notification-network
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: npm run dev # Overrides the default CMD to use your watch script
+    volumes:
+      - .:/app # Mounts your local project folder to the container's app folder
+      - /app/node_modules # Anonymous volume to protect the container's node_modules
+    depends_on:
+      - redis
+  api-3:
+    image: notification-api
+    container_name: notification-api-3
+    environment:
+      PORT: 3000
+      SERVER_ID: api-3
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://rabbitmq:5672
+    networks:
+      - notification-network
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: npm run dev # Overrides the default CMD to use your watch script
+    volumes:
+      - .:/app # Mounts your local project folder to the container's app folder
+      - /app/node_modules # Anonymous volume to protect the container's node_modules
+    depends_on:
+      - redis
+  nginx:
+    image: nginx:alpine
+    container_name: notification-nginx
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api-1
+      - api-2
+      - api-3
+    networks:
+      - notification-network
+  redis:
+    image: redis:7-alpine
+    container_name: notification-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - notification-network
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: notification-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+networks:
+  notification-network:
+    driver: bridge
